@@ -1,0 +1,86 @@
+/* ==========================================================================
+   urlbar.css — URL bar, fixed width (Firefox 157)
+
+   In 157 the urlbar is a <moz-urlbar> custom element; the old
+   #urlbar-background / #urlbar-input-container have become classes.
+   The megabar (the expansion on focus via [breakout-extend]) is gone: the
+   results panel is a popover and the bar no longer changes size.
+
+   Colours go through the tokens set in _variables.css
+   (--urlbar-background-color / -focus) and specifically NOT through direct
+   rules on .urlbar-background: with the panel open, the background is painted
+   in two halves (the input's and the view's, which meet to form a single
+   surface). Forcing just one of them would reveal a seam.
+   ========================================================================== */
+
+/* --- Frozen width -------------------------------------------------------- */
+/* Firefox sets `flex: 400 0 auto` and a computed width that reserves room for
+   the downloads/extensions buttons. Both are overridden. */
+
+#urlbar-container {
+  flex: 0 0 auto !important;
+  width: var(--vp-urlbar-width) !important;
+  min-width: var(--vp-urlbar-width) !important;
+  max-width: var(--vp-urlbar-width) !important;
+  align-items: center;
+  padding-block: 0 !important;
+}
+
+#urlbar {
+  min-height: var(--vp-control-height) !important;
+  font-size: 12px;
+}
+
+/* --- The pill, with the panel closed only -------------------------------- */
+/* When the panel opens, .urlbar-background stretches to cover the results and
+   .urlbarView-background picks up the same --urlbar-background-border-radius.
+   A 999px radius then rounds the panel's bottom corners hard enough to clip the
+   last results. So the geometry of the open state is left entirely to Firefox:
+   it already knows which radii belong on each side of the junction. */
+
+.urlbar:not([popover-open]) {
+  --urlbar-border-radius: var(--vp-urlbar-radius) !important;
+}
+
+.urlbar:not([popover-open]) > .urlbar-background {
+  border-radius: var(--vp-urlbar-radius) !important;
+  box-shadow: none !important;
+}
+
+/* --- Inner icons --------------------------------------------------------- */
+
+#identity-box,
+#tracking-protection-icon-container,
+#page-action-buttons {
+  padding-block: 0 !important;
+}
+
+.urlbar-icon,
+.urlbar-page-action {
+  border-radius: var(--vp-button-radius) !important;
+}
+
+/* The label next to the padlock eats the usable width of a narrow bar. */
+#identity-icon-label {
+  display: none !important;
+}
+
+/* --- Search engine switcher ---------------------------------------------- */
+/* The magnifier + chevron button at the head of the bar (the "unified search
+   button"). On a narrow bar it takes up a fair amount of room for a feature
+   that stays reachable otherwise: Ctrl+K, or typing "@" followed by the
+   engine's keyword straight into the bar.
+
+   It is a <moz-button class="searchmode-switcher"> — no id, like the rest of
+   <moz-urlbar>'s markup in 157. Hence the selector being scoped to #urlbar: the
+   same class serves the standalone search bar and the new tab page's, where the
+   button still makes sense.
+
+   No padding compensation needed: Firefox already hides this button itself when
+   `browser.urlbar.searchModeSwitcher.featureGate` is false, so the bar knows how
+   to do without it, and .urlbar-input-container keeps its symmetric
+   `padding-inline`. */
+
+#urlbar > .urlbar-input-container > .searchmode-switcher {
+  display: none !important;
+}

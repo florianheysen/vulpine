@@ -1,0 +1,256 @@
+/* ==========================================================================
+   layout.css — the single row
+
+   Target:
+     [‹ › ⟳] [sidebar] [urlbar] [tabs ············ +] [ext ⬇ ⋮] [─ ▢ ✕]
+
+   Firefox 157's actual structure (read out of browser.xhtml in omni.ja):
+
+     toolbox#navigator-toolbox
+       toolbar#toolbar-menubar
+       toolbar#TabsToolbar
+         hbox.titlebar-spacer
+         hbox.toolbar-items
+           hbox#TabsToolbar-customization-target
+             tabs#tabbrowser-tabs
+             toolbarbutton#new-tab-button
+             toolbarspring
+             toolbarbutton#alltabs-button
+         hbox.titlebar-buttonbox-container        ← the visible ─ ▢ ✕
+       toolbar#nav-bar
+         hbox.titlebar-spacer
+         hbox#nav-bar-customization-target
+           toolbarbutton#back-button
+           toolbarbutton#forward-button
+           toolbaritem#stop-reload-button
+           toolbarspring ×2
+           toolbaritem#urlbar-container
+           toolbarspring
+           toolbarbutton#downloads-button
+           toolbarbutton#fxa-toolbar-menu-button
+           toolbarbutton#unified-extensions-button
+         toolbarbutton#nav-bar-overflow-button
+         toolbaritem#PanelUI-button
+         hbox.titlebar-buttonbox-container        ← natively hidden
+       toolbar#PersonalToolbar
+       toolbar#notifications-toolbar
+
+   There is no #titlebar any more: the toolbars are direct children of the
+   toolbox.
+
+   Technique: #navigator-toolbox becomes a flex row, and every intermediate
+   container gets display:contents so that its children become items of that
+   same row. `order` then places them.
+
+   Every `order` carries !important: Firefox itself sets `order: 1000` on
+   .titlebar-buttonbox-container, and a normal user declaration would lose
+   against it.
+
+   Customize mode needs the original structure, so everything sits behind
+   :root:not([customizing]).
+   ========================================================================== */
+
+/* --- The row ----------------------------------------------------------- */
+
+:root:not([customizing]) #navigator-toolbox {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  align-items: center;
+  /* row-gap explicitly at 0: the `gap` shorthand sets BOTH axes, and on a
+     flex-wrap container it also applies between lines. The row is not alone on
+     its line — #toolbar-menubar and #notifications-toolbar form two empty 0px
+     lines — so every inter-line gap was adding to the toolbox height for
+     nothing. All we want here is horizontal spacing between items. */
+  gap: 0 var(--vp-gap);
+  padding-inline: var(--vp-row-padding) !important;
+  min-height: var(--vp-row-height) !important;
+  background: var(--vp-bg-toolbar) !important;
+  /* The hairline is painted as an inset shadow rather than a border-bottom: a
+     border would add to --vp-row-height and the row would be 36px instead of
+     35. */
+  box-shadow: inset 0 -1px 0 var(--vp-row-border-bottom) !important;
+  -moz-window-dragging: drag;
+}
+
+/* --- Horizontal spacing ------------------------------------------------- */
+/* The `gap` above must be the row's ONLY horizontal spacing. Firefox adds
+   several others, each on a different kind of element: without this section
+   every pair of elements gets its own (6px between two buttons, 5.5px between
+   the URL bar and the tabs, 3px between two tabs, 12px before the ─ ▢ ✕...).
+
+   The three tokens below are set on the toolbox and not on :root: they are
+   inherited by the whole row, and #PersonalToolbar, which redefines
+   --toolbarbutton-padding-outer for itself, keeps the spacing of its bookmarks.
+   Nothing here touches the vertical axis. */
+
+:root:not([customizing]) #navigator-toolbox {
+  /* 2px on either side of every .toolbarbutton-1, between the element's edge
+     and its hover background (toolbarbuttons.css). */
+  --toolbarbutton-padding-outer: 0px !important;
+  /* 8px before the first button of #nav-bar-customization-target and after
+     #PanelUI-menu-button (browser-shared.css, toolbarbuttons.css). */
+  --toolbar-padding-inline: 0px !important;
+  /* 2px on either side of #urlbar-container. */
+  --urlbar-margin-inline: 0px !important;
+}
+
+/* #stop-reload-button: grouped toolbaritems carry their own margin. */
+:root:not([customizing]) #navigator-toolbox .toolbaritem-combined-buttons {
+  margin-inline: 0 !important;
+}
+
+/* --- Flattening the containers ------------------------------------------ */
+/* #TabsToolbar .toolbar-items is the container that pinned the tabs to the far
+   left: without flattening it, #tabbrowser-tabs is not a row item and its
+   `order` is ignored. */
+
+:root:not([customizing]) :is(
+  #TabsToolbar,
+  #TabsToolbar .toolbar-items,
+  #TabsToolbar-customization-target,
+  #nav-bar,
+  #nav-bar-customization-target
+) {
+  display: contents !important;
+}
+
+/* --- Order -------------------------------------------------------------- */
+/* Values are spaced out so things can be slotted in without renumbering. */
+
+/* Defaults: anything not named below goes to the right. */
+:root:not([customizing]) #nav-bar > *                       { order: 44 !important; }
+:root:not([customizing]) #nav-bar-customization-target > *  { order: 40 !important; }
+:root:not([customizing]) #TabsToolbar > *                   { order: 34 !important; }
+
+/* Navigation group, on the left */
+:root:not([customizing]) #nav-bar-customization-target > #back-button         { order: 10 !important; }
+:root:not([customizing]) #nav-bar-customization-target > #forward-button      { order: 11 !important; }
+:root:not([customizing]) #nav-bar-customization-target > #stop-reload-button  { order: 12 !important; }
+:root:not([customizing]) #nav-bar-customization-target > #sidebar-button      { order: 13 !important; }
+:root:not([customizing]) #nav-bar-customization-target > #firefox-view-button { order: 14 !important; }
+
+/* The group's first button hugs the left edge, the way the ─ ▢ ✕ hug the right
+   one (toolbar.css). The native paddings that pushed it away are already
+   neutralised above; what remains is the row's `padding-inline`, cancelled here
+   by a negative margin of the same value.
+
+   `:first-child` rather than `#back-button`: the group's DOM order follows its
+   visual order, so the rule survives the Back button being removed in customize
+   mode. */
+:root:not([customizing]) #nav-bar-customization-target > :first-child {
+  margin-inline-start: calc(-1 * var(--vp-row-padding)) !important;
+}
+
+/* URL bar */
+:root:not([customizing]) #nav-bar-customization-target > #urlbar-container    { order: 20 !important; }
+
+/* Tabs. The visible + is #tabs-newtab-button, inside the tab strip;
+   #new-tab-button is a duplicate that would end up at the other end of the row,
+   so it is hidden. Set it back to `flex` to get it. */
+:root:not([customizing]) #tabbrowser-tabs { order: 30 !important; }
+:root:not([customizing]) #new-tab-button  { display: none !important; }
+:root:not([customizing]) #alltabs-button  { order: 42 !important; }
+
+/* Right-hand group */
+:root:not([customizing]) #nav-bar > #smartwindow-ask-button    { order: 46 !important; }
+:root:not([customizing]) #nav-bar > #nav-bar-overflow-button   { order: 48 !important; }
+:root:not([customizing]) #nav-bar > #PanelUI-button            { order: 50 !important; }
+
+/* The ─ ▢ ✕ last. The :is() is there for specificity: without it the rule is
+   (0,3,0) and loses against the `#TabsToolbar > *` default at (1,2,0), which
+   drops the window buttons back into the middle of the row. */
+:root:not([customizing]) :is(#TabsToolbar, #nav-bar) > .titlebar-buttonbox-container {
+  order: 60 !important;
+}
+
+/* --- What gets pulled out of the row ------------------------------------ */
+
+/* Spacer before the tabs: pointless on a single line.
+   The one after it is kept, narrowed: it is the guaranteed handle for dragging
+   the window (see the section further down). */
+:root:not([customizing]) .titlebar-spacer[type="pre-tabs"] {
+  display: none !important;
+}
+:root:not([customizing]) .titlebar-spacer[type="post-tabs"] {
+  width: var(--vp-drag-handle-width) !important;
+}
+
+/* Expanding springs would wreck the distribution. */
+:root:not([customizing]) #navigator-toolbox toolbarspring { display: none !important; }
+
+/* Menu bar hidden (comes back on Alt, on its own line). */
+:root:not([customizing]) #toolbar-menubar[autohide="true"][inactive] {
+  display: none !important;
+}
+:root:not([customizing]) #toolbar-menubar {
+  order: -1 !important;
+  flex: 0 0 100%;
+}
+
+/* --- Distributing the space ---------------------------------------------- */
+
+/* Tabs take what is left. min-width:0 is mandatory, otherwise a flex item
+   refuses to shrink below the width of its content. */
+:root:not([customizing]) #tabbrowser-tabs {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+/* --- Row height ---------------------------------------------------------- */
+/* `min-height` on #navigator-toolbox only constrains downwards: the real height
+   of a flex line is that of its tallest element. Several items in the row have
+   an intrinsic height above --vp-row-height (the window button box is rendered
+   by the native Windows theme, the tab strip has its own
+   --tabstrip-min-height), so the items themselves have to be constrained.
+
+   #PersonalToolbar and #notifications-toolbar are excluded: they occupy their
+   own flex line, whose height is independent. */
+
+:root:not([customizing]) :is(
+  #nav-bar > *,
+  #nav-bar-customization-target > *,
+  #TabsToolbar > *,
+  #TabsToolbar .toolbar-items > *,
+  #TabsToolbar-customization-target > *,
+  #tabbrowser-arrowscrollbox,
+  .titlebar-buttonbox
+) {
+  max-height: var(--vp-row-height) !important;
+}
+
+/* Full-width bars, below the row. */
+:root:not([customizing]) #PersonalToolbar {
+  order: 100 !important;
+  flex: 0 0 100%;
+}
+:root:not([customizing]) #notifications-toolbar {
+  order: 101 !important;
+  flex: 0 0 100%;
+}
+
+/* --- Dragging the window ------------------------------------------------- */
+/* With no system title bar, the area that lets you drag the window is defined
+   entirely here. Two traps:
+
+   1. Do NOT set #tabbrowser-tabs to no-drag. It has flex:1 and covers all the
+      free space in the row: marking it would remove the last grabbable area and
+      the window would become impossible to move. Only the tabs themselves
+      (.tabbrowser-tab) are excluded, so the empty space around them stays a
+      drag area.
+   2. When there are enough tabs to fill the strip, that empty space disappears.
+      Hence the .titlebar-spacer[type="post-tabs"] spacer, kept as a guaranteed
+      handle — this is Firefox's own solution, which reserves two 40px ones. */
+
+:root:not([customizing]) #navigator-toolbox :is(
+  toolbarbutton,
+  #urlbar-container,
+  .tabbrowser-tab
+) {
+  -moz-window-dragging: no-drag;
+}
+
+/* --- Fullscreen ---------------------------------------------------------- */
+
+:root[inFullscreen] #navigator-toolbox { min-height: 0 !important; }

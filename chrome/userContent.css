@@ -1,0 +1,65 @@
+/* ==========================================================================
+   userContent.css — the sheet applied to CONTENT DOCUMENTS
+
+   The counterpart of userChrome.css: same folder, same pref
+   (toolkit.legacyUserProfileCustomizations.stylesheets), but it applies to
+   pages rather than to the interface. about: pages (new tab, preferences) are
+   content, and therefore out of userChrome.css's reach.
+
+   The --vp-* tokens from modules/_variables.css are NOT available here: they
+   live in the chrome document, which is a different document. Hence the few
+   values redefined locally.
+   ========================================================================== */
+
+/* about:newtab is served from resource://newtab/. Depending on the load path,
+   the document's URI can be either one: both are listed rather than betting on
+   which one @-moz-document will see. */
+
+@-moz-document url-prefix("about:newtab"),
+               url-prefix("about:home"),
+               url-prefix("resource://newtab/") {
+  :root {
+    /* How far around the button it starts reappearing. */
+    --vp-reveal-radius: 40px;
+    --vp-reveal-duration: 160ms;
+  }
+
+  /* --- The "Customize" button -------------------------------------------- */
+  /* Hidden at rest, revealed as the mouse approaches.
+
+     Two variants depending on the active design system, hence the two classes:
+       .personalize-button        <button>, before Nova
+       .open-customization-button <moz-button>, with Nova
+     (browser.nova.enabled defaults to true in 157)
+
+     opacity rather than display/visibility: the element keeps its box, so it
+     stays hoverable — which is what lets it come back. */
+
+  .personalizeButtonWrapper :is(.personalize-button, .open-customization-button) {
+    opacity: 0 !important;
+    transition: opacity var(--vp-reveal-duration) ease !important;
+  }
+
+  /* :focus-within and not :focus-visible: on the Nova variant the focus lands
+     inside the <moz-button>'s shadow DOM, out of reach of a selector placed on
+     the host. Without this the button stays invisible to keyboard navigation. */
+
+  .personalizeButtonWrapper:is(:hover, :focus-within)
+    :is(.personalize-button, .open-customization-button) {
+    opacity: 1 !important;
+  }
+
+  /* Widened hover area. It is placed on the container, which is
+     position: fixed, and not on the button, which is overflow:hidden and would
+     clip it.
+
+     Note: this area captures clicks, like any other box. It covers the bottom
+     right corner of the page, normally empty. Set --vp-reveal-radius to 0px to
+     limit it to the button itself. */
+
+  .personalizeButtonWrapper::before {
+    content: "";
+    position: absolute;
+    inset: calc(-1 * var(--vp-reveal-radius));
+  }
+}

@@ -1,0 +1,137 @@
+/* ==========================================================================
+   tabs.css — tab shape and colour (Firefox 157)
+
+   Sizes and colours go through the native tokens set in _variables.css
+   (--tab-min-height, --tab-border-radius, --tab-background-color-selected...).
+   This file only deals with what those tokens don't cover.
+   ========================================================================== */
+
+/* --- Widths ------------------------------------------------------------- */
+/* --tab-min-width / --tab-max-width are set by Firefox on
+   #tabbrowser-tabs[orient="horizontal"], not on :root: they have to be
+   redefined on that same element to win. */
+
+#tabbrowser-tabs[orient="horizontal"] {
+  --tab-min-width: var(--vp-tab-min-width) !important;
+  --tab-max-width: var(--vp-tab-max-width) !important;
+  --tab-min-width-uidensity: 0px !important;
+}
+
+/* The half-margin on the strip's first and last element (see below) would spill
+   out at both ends: it would add to the row's gap and the urlbar↔first-tab
+   spacing would no longer match the other pairs. A negative margin of half a
+   gap takes it back. */
+#tabbrowser-tabs {
+  border-inline-start: none !important;
+  padding-inline: 0 !important;
+  margin-inline: calc(var(--vp-tab-gap) / -2) !important;
+}
+
+/* --- Dragging a tab ------------------------------------------------------ */
+/* During a drag, Firefox sets [movingtab] on the strip and grows the drop area
+   downwards:
+
+     #tabbrowser-tabs[orient="horizontal"][movingtab] {
+       padding-bottom: 15px;
+       margin-bottom: -15px;
+     }
+
+   On the stock layout those 15px spill below the strip, harmlessly. Here two
+   things make them destructive:
+     - the row's items are capped by `max-height: --vp-row-height`
+       (layout.css, "Row height" section);
+     - all of XUL is `box-sizing: border-box` (xul.css: `* { box-sizing:
+       border-box }`), so the padding is taken INSIDE those 35px.
+   The tabs' content box dropped to 20px: the strip collapsed as soon as you
+   grabbed a tab, and the negative margin-bottom shifted it upwards on top of
+   that in the centred row.
+
+   The widened drop area makes no sense on a single row anyway: below the tabs
+   is the URL bar, not empty space. Cancel it. */
+
+#tabbrowser-tabs[orient="horizontal"][movingtab] {
+  padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* --- One tab ------------------------------------------------------------- */
+
+/* Spacing between tabs is done with margins rather than a gap: the strip is an
+   arrowscrollbox and its children are distributed into a shadow DOM. The + is
+   housed in that same strip (#tabbrowser-arrowscrollbox-periphery), so it takes
+   the same margin to sit as far from the last tab as tabs sit from each
+   other. */
+.tabbrowser-tab,
+#tabs-newtab-button {
+  margin-inline: calc(var(--vp-tab-gap) / 2) !important;
+  padding-inline: 0 !important;
+}
+
+/* The visible shape is .tab-background. */
+.tab-background {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Nova paints the active tab with a purple→orange gradient border
+   (background: var(--tab-border-color-accent) border-box border-area, ...).
+   A plain background-color is not enough to override it, the whole background
+   property has to be set again. */
+.tab-background:is([selected], [multiselected]) {
+  background: var(--vp-bg-tab-selected) !important;
+}
+
+.tabbrowser-tab:hover > .tab-stack > .tab-background:not([selected], [multiselected]) {
+  background: var(--vp-bg-tab-hover) !important;
+}
+
+/* --- Text ---------------------------------------------------------------- */
+
+.tab-label {
+  font-size: 12px;
+  color: var(--vp-text-dim) !important;
+}
+
+.tabbrowser-tab[selected] .tab-label {
+  color: var(--vp-text) !important;
+}
+
+.tab-content {
+  padding-inline: var(--tab-inline-padding) !important;
+}
+
+/* --- Close button -------------------------------------------------------- */
+
+.tab-close-button {
+  display: var(--vp-show-tab-close) !important;
+  border-radius: var(--vp-button-radius) !important;
+}
+
+/* --- The + button -------------------------------------------------------- */
+
+#tabs-newtab-button,
+#new-tab-button {
+  display: var(--vp-show-newtab) !important;
+}
+
+#tabs-newtab-button > .toolbarbutton-icon,
+#new-tab-button > .toolbarbutton-icon {
+  width: var(--vp-control-height) !important;
+  height: var(--vp-control-height) !important;
+  padding: 6px !important;
+  border-radius: var(--vp-button-radius) !important;
+}
+
+/* --- Details ------------------------------------------------------------- */
+
+/* The loading burst would spill past the radius. */
+.tab-loading-burst {
+  border-radius: var(--vp-tab-radius) !important;
+}
+
+/* No vertical separators between tabs. */
+.tabbrowser-tab::after,
+.tabbrowser-tab::before {
+  display: none !important;
+}

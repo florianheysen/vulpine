@@ -1,0 +1,14 @@
+/* ==========================================================================
+   vulpine — entry point
+   Tested on Firefox Nightly 157.0a1 (Windows 11)
+
+   This file contains NOTHING but @import. All the logic lives in modules/.
+   Import order is cascade order — don't reshuffle it lightly.
+   ========================================================================== */
+
+@import "modules/_variables.css";
+@import "modules/layout.css";
+@import "modules/tabs.css";
+@import "modules/urlbar.css";
+@import "modules/toolbar.css";
+@import "modules/sidebar.css";

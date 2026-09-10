@@ -1,0 +1,16 @@
+# Artefacts d'édition
+*.bak
+*.orig
+*.rej
+.DS_Store
+Thumbs.db
+
+# Ne jamais committer un profil Firefox par erreur
+profiles.ini
+prefs.js
+places.sqlite*
+cookies.sqlite*
+
+# Artefacts npm
+node_modules/
+*.tgz

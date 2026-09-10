@@ -1,0 +1,143 @@
+/* ==========================================================================
+   _variables.css — every number and every colour in the theme.
+
+   This is the only file to touch to retune the look.
+
+   Two blocks:
+     1. the theme tokens (--vp-*), which is what you edit;
+     2. the mapping onto Firefox 157's own variables — don't touch without
+        checking the names, they change between major versions.
+
+   On !important: userChrome.css is a "user" stylesheet. A normal user
+   declaration loses against an author declaration, and Firefox's internal
+   sheets are author ones. In 157 they are sorted into @layers on top of that.
+   Only !important on the user side wins. Hence its systematic presence in the
+   mapping block.
+   ========================================================================== */
+
+:root {
+  /* ---- Heights ------------------------------------------------------ */
+  --vp-row-height: 35px;        /* height of the single row */
+  --vp-tab-height: 30px;        /* height of one tab */
+  --vp-control-height: 28px;    /* height of the URL bar and buttons */
+
+  /* ---- Radii -------------------------------------------------------- */
+  --vp-tab-radius: 8px;
+  /* Aligned on the tabs. Set 999px for a pill, or any independent value —
+     nothing else depends on this token. */
+  --vp-urlbar-radius: var(--vp-tab-radius);
+  --vp-button-radius: 6px;
+
+  /* ---- Widths ------------------------------------------------------- */
+  --vp-urlbar-width: 320px;     /* fixed width of the URL bar */
+  --vp-tab-min-width: 66px;
+  --vp-tab-max-width: 200px;
+
+  /* ---- Spacing ------------------------------------------------------ */
+  /* Horizontal gap between EVERY item in the row — buttons, URL bar and tabs
+     included. It is the theme's only source of horizontal spacing: layout.css
+     cancels the inline margins and paddings Firefox sets itself (see the
+     "Horizontal spacing" section). 6px rather than 2px because that is the
+     spacing we effectively had before: a 2px gap plus 2px of outer padding on
+     each button. */
+  --vp-gap: 6px;
+  /* Between two tabs. Aligned by default; set its own value to tighten the
+     strip without touching the rest of the row. */
+  --vp-tab-gap: var(--vp-gap);
+  --vp-row-padding: 5px;
+
+  /* Handle reserved for dragging the window, to the right of the tabs. With no
+     system title bar this is the only guaranteed grabbable area when tabs fill
+     the strip. Don't set it to 0. */
+  --vp-drag-handle-width: 24px;
+
+  /* ---- Colours ------------------------------------------------------ */
+  --vp-bg-toolbar: #161616;
+  --vp-bg-field: #262626;
+  --vp-bg-field-focus: #2f2f2f;
+  --vp-bg-tab-selected: #2e2e2e;
+  --vp-bg-tab-hover: #202020;
+  --vp-bg-button-hover: #262626;
+  --vp-bg-button-active: #333333;
+
+  --vp-text: #e6e6e6;
+  --vp-text-dim: #9a9a9a;
+
+  --vp-border: transparent;
+  --vp-border-focus: #4a4a4a;
+  --vp-row-border-bottom: #000000;
+  --vp-accent: #4f8cff;
+
+  /* ---- Colour scheme ------------------------------------------------ */
+  /* Tells the engine whether the chrome is light or dark. Essential: a large
+     share of Firefox 157's tokens go through light-dark(), which resolves
+     against this value. Painting a dark background is not enough, it has to be
+     declared as well — otherwise Firefox computes its own colours (text, icons,
+     native window buttons) for a light background.
+     If you move the theme to a light palette, set `light`. */
+  --vp-color-scheme: dark;
+
+  /* ---- Switches ----------------------------------------------------- */
+  --vp-show-tab-close: flex;
+  --vp-show-newtab: flex;
+}
+
+/* ==========================================================================
+   Mapping onto Firefox's own variables — 157 ("Nova" design system)
+   ========================================================================== */
+
+:root {
+  /* ---- Tabs --------------------------------------------------------- */
+  --tab-min-height: var(--vp-tab-height) !important;
+  --tab-margin-block: calc((var(--vp-row-height) - var(--vp-tab-height)) / 2) !important;
+  --tab-border-radius: var(--vp-tab-radius) !important;
+  --tab-inline-padding: 8px !important;
+
+  --tab-background-color: transparent !important;
+  --tab-background-color-hover: var(--vp-bg-tab-hover) !important;
+  --tab-background-color-selected: var(--vp-bg-tab-selected) !important;
+
+  /* Nova draws a purple/orange gradient border on the active tab. It is
+     neutralised here; the flattening itself happens in tabs.css. */
+  --tab-border-color: transparent !important;
+  --tab-border-color-hover: transparent !important;
+  --tab-border-color-selected: transparent !important;
+  --tab-box-shadow-selected: none !important;
+
+  /* ---- Colour scheme ------------------------------------------------ */
+  /* Makes the theme self-contained: the chrome renders the same whichever
+     Firefox theme is active (light, dark or system). */
+  color-scheme: var(--vp-color-scheme) !important;
+  --toolbar-color-scheme: var(--vp-color-scheme) !important;
+
+  /* ---- Toolbar ------------------------------------------------------ */
+  --toolbar-background-color: var(--vp-bg-toolbar) !important;
+  --toolbar-text-color: var(--vp-text) !important;
+  --toolbarbutton-icon-fill: var(--vp-text) !important;
+  --toolbarbutton-border-radius: var(--vp-button-radius) !important;
+
+  /* Title strip (the light theme paints it white via --lwt-accent-color). */
+  --toolbox-background-color: var(--vp-bg-toolbar) !important;
+  --toolbox-background-color-inactive: var(--vp-bg-toolbar) !important;
+  --toolbox-text-color: var(--vp-text) !important;
+  --toolbox-text-color-inactive: var(--vp-text-dim) !important;
+
+  /* ---- URL field ---------------------------------------------------- */
+  --urlbar-height: var(--vp-control-height) !important;
+  --urlbar-background-color: var(--vp-bg-field) !important;
+  --urlbar-background-color-focus: var(--vp-bg-field-focus) !important;
+  --urlbar-container-min-width: var(--vp-urlbar-width) !important;
+  /* --urlbar-margin-inline is neutralised in layout.css: the spacing around the
+     URL bar comes from the row's gap, like every other item. */
+  --urlbar-padding-block: 0px !important;
+
+  --toolbar-field-background-color: var(--vp-bg-field) !important;
+  --toolbar-field-background-color-focus: var(--vp-bg-field-focus) !important;
+  --toolbar-field-text-color: var(--vp-text) !important;
+  --toolbar-field-border-color: var(--vp-border) !important;
+  --toolbar-field-border-color-focus: var(--vp-border-focus) !important;
+
+  /* ---- Misc --------------------------------------------------------- */
+  --focus-outline-color: var(--vp-accent) !important;
+  --chrome-content-separator-color: var(--vp-row-border-bottom) !important;
+}

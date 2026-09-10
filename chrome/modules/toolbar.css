@@ -1,0 +1,123 @@
+/* ==========================================================================
+   toolbar.css — toolbar buttons, window controls, panels
+   ========================================================================== */
+
+/* --- Toolbar buttons ----------------------------------------------------- */
+/* The radius comes from the --toolbarbutton-border-radius token
+   (_variables.css); this only handles size and states. */
+
+#navigator-toolbox .toolbarbutton-1 > .toolbarbutton-icon,
+#navigator-toolbox .toolbarbutton-1 > .toolbarbutton-badge-stack {
+  width: var(--vp-control-height) !important;
+  height: var(--vp-control-height) !important;
+  padding: 5px !important;
+}
+
+#navigator-toolbox .toolbarbutton-1:not([disabled]):hover
+  > :is(.toolbarbutton-icon, .toolbarbutton-badge-stack) {
+  background-color: var(--vp-bg-button-hover) !important;
+}
+
+#navigator-toolbox .toolbarbutton-1:not([disabled]):is([open], :active)
+  > :is(.toolbarbutton-icon, .toolbarbutton-badge-stack) {
+  background-color: var(--vp-bg-button-active) !important;
+}
+
+/* No text labels under the row's icons — they would make it taller.
+   Deliberately scoped to #nav-bar and #TabsToolbar: inside #PersonalToolbar,
+   .toolbarbutton-text carries the NAME of each bookmark, and hiding the class
+   across the whole toolbox would reduce them to their favicon. */
+#nav-bar .toolbarbutton-text,
+#TabsToolbar .toolbarbutton-text {
+  display: none !important;
+}
+
+/* --- Colour scheme ------------------------------------------------------- */
+/* The color-scheme set on :root would be enough, except that the built-in
+   themes (light and dark alike) are lightweight themes: they set
+   [lwt-toolbar-field] on :root and force a color-scheme onto the URL field. So
+   it has to be reasserted here, otherwise the urlbar's text stays computed for
+   a light background. */
+
+#navigator-toolbox,
+#navigator-toolbox .urlbar,
+#navigator-toolbox #searchbar,
+.titlebar-buttonbox {
+  color-scheme: var(--vp-color-scheme) !important;
+}
+
+/* --- Window controls (─ ▢ ✕) --------------------------------------------- */
+/* Firefox only shows one set, #TabsToolbar's; #nav-bar's is natively hidden.
+
+   They have to touch the window's right edge, the way Windows does it: on a
+   maximised window the target then becomes infinitely wide, since the cursor
+   stops at the screen edge. Nothing on the native side pushes them away
+   (.titlebar-buttonbox has neither margin nor padding); what detaches them is
+   the row's `padding-inline: var(--vp-row-padding)` (layout.css). It is
+   cancelled here by a negative margin of the same value, which leaves the
+   padding intact for the rest of the row. Keep it in sync with that padding:
+   the margin has to be exactly its opposite. */
+
+.titlebar-buttonbox-container {
+  height: var(--vp-row-height) !important;
+  margin-inline: 0 calc(-1 * var(--vp-row-padding)) !important;
+  padding-inline-end: 0 !important;
+}
+
+.titlebar-buttonbox {
+  margin-inline-end: 0 !important;
+  padding-inline-end: 0 !important;
+}
+
+/* --- Toolbar / content separator ----------------------------------------- */
+/* The native hairline would double up with layout.css's border-bottom. */
+
+#navigator-toolbox::after {
+  display: none !important;
+}
+
+/* --- Bookmarks toolbar --------------------------------------------------- */
+
+/* DO NOT reintroduce a rule that hides this toolbar when it is empty.
+
+   Firefox builds the Places view lazily, when the toolbar becomes visible. A
+   rule such as
+     #PersonalToolbar:not(:has(#PlacesToolbarItems > .bookmark-item))
+       { display: none }
+   creates a deadlock: empty so hidden, hidden so never rendered, never rendered
+   so never populated — the condition can never become false again and the
+   bookmarks never show up.
+
+   Firefox already collapses the toolbar on its own according to
+   browser.toolbars.bookmarks.visibility, there is nothing to add.
+
+   To never show it at all, whatever it holds:
+     #PersonalToolbar { display: none !important; } */
+
+/* Without padding, the .bookmark-item elements and their margins get clipped by
+   the overflow: clip Firefox sets on this toolbar. It costs the top row no
+   height: this toolbar occupies its own flex line. */
+#PersonalToolbar {
+  background: var(--vp-bg-toolbar) !important;
+  padding-block: 2px !important;
+}
+
+
+#PersonalToolbar .bookmark-item {
+  border-radius: var(--vp-button-radius) !important;
+  padding: 3px 6px !important;
+}
+
+/* Empty state (visible on the new tab page): the text is computed by Firefox
+   for a light background, so it has to be taken over. */
+#personal-toolbar-empty-description,
+#personal-toolbar-empty-description .text-link {
+  color: var(--vp-text-dim) !important;
+}
+
+/* --- Panels and menus ---------------------------------------------------- */
+
+panel::part(content),
+menupopup::part(content) {
+  border-radius: calc(var(--vp-tab-radius) + 2px) !important;
+}

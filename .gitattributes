@@ -1,0 +1,10 @@
+# Un install.sh livré en CRLF ne s'exécute pas : le shebang devient
+# « /usr/bin/env bash\r », introuvable. On fige donc les fins de ligne côté
+# dépôt plutôt que de dépendre du core.autocrlf de la machine qui committe.
+* text=auto
+
+*.sh   text eol=lf
+*.ps1  text eol=crlf
+*.css  text eol=lf
+*.js   text eol=lf
+*.md   text eol=lf

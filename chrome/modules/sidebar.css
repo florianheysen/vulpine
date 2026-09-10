@@ -1,0 +1,31 @@
+/* ==========================================================================
+   sidebar.css — the sidebar
+
+   Firefox 137+ has two possible sidebars:
+     - #sidebar-main : the vertical launcher strip (sidebar revamp)
+     - #sidebar-box  : the classic panel (bookmarks, history)
+   ========================================================================== */
+
+#sidebar-box,
+#sidebar-main {
+  background: var(--vp-bg-toolbar) !important;
+}
+
+/* The classic panel's title takes a whole line for nothing. */
+#sidebar-header {
+  font-size: 12px;
+  padding: 6px 8px !important;
+  border-bottom: 1px solid var(--vp-row-border-bottom) !important;
+}
+
+/* Discreet resize splitter */
+#sidebar-splitter {
+  border: none !important;
+  min-width: 1px !important;
+  background: var(--vp-row-border-bottom) !important;
+}
+
+/* Vertical launcher buttons, same radius as the rest */
+#sidebar-main .toolbarbutton-1 > .toolbarbutton-icon {
+  border-radius: var(--vp-button-radius) !important;
+}
